@@ -31,6 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.yiwen.activity.SignActivity"
+            android:screenOrientation="landscape" >
+        </activity>
     </application>
 
 </manifest>

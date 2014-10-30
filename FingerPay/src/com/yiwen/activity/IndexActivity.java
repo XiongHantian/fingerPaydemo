@@ -1,8 +1,11 @@
 package com.yiwen.activity;
 
 import com.yiwen.fingerpay.R;
+
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 public class IndexActivity extends Activity {
 
@@ -16,4 +19,17 @@ public class IndexActivity extends Activity {
 
 	}
 
+	public void onClick(View v) {
+		Intent intent = null;
+		switch (v.getId()) {
+		case R.id.sign_imageButton:
+			intent = new Intent(IndexActivity.this, SignActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.auth_imageButton:
+			break;
+		default:
+			break;
+		}
+	}
 }

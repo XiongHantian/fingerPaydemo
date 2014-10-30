@@ -1,9 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="match_parent"
     android:background="#ebebf1"
-    android:orientation="vertical" >
+    android:orientation="horizontal" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,10 +12,11 @@
 
         <ImageView
             android:id="@+id/logo_imageView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="150dp"
-            android:paddingRight="150dp"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_gravity="center|top"
+            android:layout_marginTop="-30dp"
+            android:layout_marginBottom="-50dp"
             android:src="@drawable/logo" />
 
         <LinearLayout
@@ -25,9 +26,9 @@
 
             <ImageButton
                 android:id="@+id/sign_imageButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="40dp"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:layout_marginRight="30dp"
                 android:layout_weight="1"
                 android:background="#00000000"
                 android:onClick="onClick"
@@ -36,9 +37,9 @@
 
             <ImageButton
                 android:id="@+id/auth_imageButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="40dp"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:layout_marginLeft="30dp"
                 android:layout_weight="1"
                 android:background="#00000000"
                 android:onClick="onClick"
@@ -52,9 +53,9 @@
             android:layout_height="match_parent"
             android:gravity="bottom|center"
             android:typeface="monospace"
-            android:paddingBottom="25dp"
+            android:paddingBottom="15dp"
             android:text="亿纹科技"
-            android:textSize="25sp" />
+            android:textSize="20sp" />
     </LinearLayout>
 
 </LinearLayout>
