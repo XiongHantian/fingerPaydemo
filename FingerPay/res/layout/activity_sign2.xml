@@ -48,17 +48,31 @@
             android:scaleType="fitStart"
             android:src="@drawable/sign_finger" />
 
-        <ImageView
-            android:id="@+id/sign_lfinger_iv"
+        <FrameLayout
             android:layout_width="250dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="10dp"
-            android:clickable="true"
-            android:onClick="onClick"
-            android:scaleType="center"
-            android:src="@drawable/finger_bg" />
+            android:layout_marginTop="10dp" >
+
+            <ImageView
+                android:id="@+id/sign_lfinger_iv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:scaleType="center"
+                android:src="@drawable/finger_bg" />
+
+            <TextView
+                android:id="@+id/sign_lfinger_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:text=""
+                android:layout_marginBottom="10dp"
+                android:textSize="18sp" />
+        </FrameLayout>
 
         <ImageView
             android:layout_width="2dp"
@@ -69,17 +83,31 @@
             android:scaleType="centerCrop"
             android:src="@drawable/finger_gapline" />
 
-        <ImageView
-            android:id="@+id/sign_rfinger_iv"
+        <FrameLayout
             android:layout_width="250dp"
             android:layout_height="match_parent"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="10dp"
-            android:clickable="true"
-            android:onClick="onClick"
-            android:scaleType="center"
-            android:src="@drawable/finger_bg" />
+            android:layout_marginTop="10dp" >
+
+            <ImageView
+                android:id="@+id/sign_rfinger_iv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:onClick="onClick"
+                android:scaleType="center"
+                android:src="@drawable/finger_bg" />
+
+            <TextView
+                android:id="@+id/sign_rfinger_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|bottom"
+                android:text=""
+                android:layout_marginBottom="10dp"
+                android:textSize="18sp" />
+        </FrameLayout>
     </LinearLayout>
 
     <ImageButton

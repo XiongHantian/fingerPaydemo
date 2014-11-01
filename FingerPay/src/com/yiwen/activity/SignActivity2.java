@@ -58,6 +58,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 	// 控件
 	ImageView mLfingerView;
 	ImageView mRfingerView;
+	TextView mLfingerText;
+	TextView mRfingerText;
 
 	// 常量
 	public static final String TAG = "SignActivity2";
@@ -109,6 +111,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		// 初始化控件
 		mLfingerView = (ImageView) findViewById(R.id.sign_lfinger_iv);
 		mRfingerView = (ImageView) findViewById(R.id.sign_rfinger_iv);
+		mLfingerText = (TextView) findViewById(R.id.sign_lfinger_tv);
+		mRfingerText = (TextView) findViewById(R.id.sign_rfinger_tv);
 
 		MainActivity.jniFingerTCSCapContinue(1);
 
@@ -172,7 +176,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		matchTask_5.execute(3);
 
 		final FingerMatchTask matchTask_6 = new FingerMatchTask();
-		Log.i(TAG, "execute0");
 		matchTask_6.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
 		// matchTask_6.execute(0);
 	}
@@ -201,9 +204,9 @@ public class SignActivity2 extends Activity implements OnClickListener {
 	}
 
 	public void setButtonStatus(Boolean Value) {
-		//findViewById(R.id.button1).setEnabled(Value);
-		//findViewById(R.id.button2).setEnabled(Value);
-		//findViewById(R.id.button6).setEnabled(Value);
+		// findViewById(R.id.button1).setEnabled(Value);
+		// findViewById(R.id.button2).setEnabled(Value);
+		// findViewById(R.id.button6).setEnabled(Value);
 	}
 
 	// //////注册一个广播事件监听器/////////////////////
@@ -238,23 +241,23 @@ public class SignActivity2 extends Activity implements OnClickListener {
 						.getJSONArray("candidateList");
 				if (jsonArray.length() == 0) {
 					// printHint("暂无符合信息！");
-					//imgView3.setVisibility(View.INVISIBLE);
-					//textView1.setText("暂无符合信息！");
+					// imgView3.setVisibility(View.INVISIBLE);
+					// textView1.setText("暂无符合信息！");
 				} else {
 					for (int i = 0; i < jsonArray.length(); i++) {
 						JSONObject jsonObject = (JSONObject) jsonArray.opt(i);
 						imgPath = jsonObject.getString("ImgPath");
 						print("fingerImgPath=>" + imgPath);
 						if (imgPath == "") {
-							//imgView3.setVisibility(View.INVISIBLE);
+							// imgView3.setVisibility(View.INVISIBLE);
 						} else {
-							//imgView3.setVisibility(View.VISIBLE);
+							// imgView3.setVisibility(View.VISIBLE);
 							Bitmap facebmp = BitmapFactory.decodeFile(imgPath);
 							// facebmp =
 							// FingerdatasAPI.scaleImg(facebmp,180,240);
 							facebmp = FingerdatasAPI.scaleImg(facebmp, 90, 120);
-							//imgView3.setImageBitmap(facebmp);
-							//imgView3.invalidate();
+							// imgView3.setImageBitmap(facebmp);
+							// imgView3.invalidate();
 						}
 
 						info = jsonObject.getString("Info");
@@ -262,10 +265,10 @@ public class SignActivity2 extends Activity implements OnClickListener {
 						score = score > 1000 ? 1000 : score;
 
 						if (info == null) {
-							//textView1.setText("暂无符合信息！");
+							// textView1.setText("暂无符合信息！");
 						} else {
-							//textView1.setText("基本信息：" + info + "\n" + "比对分值："
-								//	+ score);
+							// textView1.setText("基本信息：" + info + "\n" + "比对分值："
+							// + score);
 						}
 					}
 				}
@@ -359,8 +362,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			if (isCancelled())
 				return;
 
-			Log.i(TAG, "Progress:" + progress[0]);
-
 			switch (progress[0]) {
 
 			case 0:
@@ -368,17 +369,26 @@ public class SignActivity2 extends Activity implements OnClickListener {
 				break;
 
 			case 1:
+				mLfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 				mLfingerView.setImageBitmap(facebmp1);
-				// scoreLeft.setTextColor(Color.RED);
-				// scoreLeft.setText("图像质量："+Score1);
+				if (Integer.parseInt(Score1) < 60)
+					mLfingerText.setTextColor(Color.RED);
+				else
+					mLfingerText.setTextColor(Color.BLACK);
+
+				mLfingerText.setText("图像质量：" + Score1);
 				mLfingerView.invalidate();
 
 				break;
 
 			case 2:
+				mRfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 				mRfingerView.setImageBitmap(facebmp2);
-				// scoreRight.setTextColor(Color.RED);
-				// scoreRight.setText("图像质量："+Score2);
+				if (Integer.parseInt(Score2) < 60)
+					mLfingerText.setTextColor(Color.RED);
+				else
+					mLfingerText.setTextColor(Color.BLACK);
+				mRfingerText.setText("图像质量：" + Score2);
 				mRfingerView.invalidate();
 				break;
 
@@ -389,10 +399,10 @@ public class SignActivity2 extends Activity implements OnClickListener {
 				printHint("指令发送失败！");
 				break;
 			case 5:
-				mLfingerView.setImageResource(R.drawable.finger_bg);
-				mRfingerView.setImageResource(R.drawable.finger_bg);
-				//scoreLeft.setText("");
-				//scoreRight.setText("");
+				// mLfingerView.setImageResource(R.drawable.finger_bg);
+				// mRfingerView.setImageResource(R.drawable.finger_bg);
+				// scoreLeft.setText("");
+				// scoreRight.setText("");
 				break;
 
 			default:
@@ -416,8 +426,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		@Override
 		protected Integer doInBackground(Integer... params) {
 
-			Log.i(TAG, "doInBackground");
-
 			int nType = params[0];
 			int ret = 0;
 			if (nType == 1 || nType == 2) {
@@ -439,21 +447,17 @@ public class SignActivity2 extends Activity implements OnClickListener {
 						+ mDoubleFingers + " 73728 4096 ";
 
 				FingerCntOld = MainActivity.jniFingerTCSCapStatus();
-				Log.i(TAG, "FingerCntOld:" + FingerCntOld);
 				// print("FingerCntOld3==="+FingerCntOld);
 				// long nTimeStart = System.currentTimeMillis();
 				ret = MainActivity.jniFingerTCSCapFingers(cmdString);
-				Log.i(TAG, "ret:" + ret);
 				// int nTimeCost = (int)((System.currentTimeMillis() -
 				// nTimeStart));
 				// print("耗时3=："+nTimeCost+"毫秒");
 			} else if (nType == 0) {
 				int delCount = 0;// 延时一段时间后删除旧指纹
-				Log.i(TAG, "延时一段时间后删除旧指纹");
 				while (!isStop) {
 					if (isCancelled())
 						return null;
-					Log.i(TAG, "800ms");
 					for (int i = 0; i < 10; i++)// 800ms
 					{
 						// 获取指纹采集的状态：是否完成
@@ -462,7 +466,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 						// print("FingerCnt==="+FingerCnt);
 						if (FingerCnt > FingerCntOld)// 有新指纹则会增加
 						{
-							Log.i(TAG, "AddNewFinger");
 
 							delCount = 0;
 							FingerCntOld = FingerCnt;
@@ -549,7 +552,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		}
 	};
 
-
 	// 采集指纹图像主函数
 	private void capFinger() {
 		if (mFingerPos > 0) {
@@ -607,7 +609,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		String line = "";
 		InputStream is = null;
 		InputStream es = null;
-		Log.i(TAG, "runCmd Start:");
 		try {
 			Runtime runtime = Runtime.getRuntime();
 			Process proc = runtime.exec(cmd, FINGEREVN, execpath);
