@@ -23,7 +23,7 @@ public class IndexActivity extends Activity {
 		Intent intent = null;
 		switch (v.getId()) {
 		case R.id.sign_imageButton:
-			intent = new Intent(IndexActivity.this, SignActivity1.class);
+			intent = new Intent(IndexActivity.this, SignActivity.class);
 			startActivity(intent);
 			break;
 		case R.id.auth_imageButton:

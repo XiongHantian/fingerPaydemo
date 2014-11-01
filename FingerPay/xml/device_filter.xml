@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <usb-device vendor-id="32792" product-id="8592" />  <!--  190初始设备，待加载固件 8018:2190-->
+    <usb-device vendor-id="32792" product-id="4496" />  <!--  190正常设备，可以采集数据 8018:1190-->
+    <usb-device vendor-id="2760" product-id="33120" />  <!--  TCS1ST 0ac8:8160 -->
+    <usb-device vendor-id="32792" product-id="24976" />  <!--  190初始设备，待加载固件 8018:6190-->
+    <usb-device vendor-id="32792" product-id="12688" />  <!--  190正常设备，可以采集数据 8018:3190-->
+    <!-- <usb-device vendor-id="1024" product-id="50010" />  身份证SDT设备，可以采集身份证信息0400:C35A-->
+    <usb-device vendor-id="8457" product-id="30264" />  <!--  AS602 TCS1ST设备，2109:7638-->
+</resources> 
