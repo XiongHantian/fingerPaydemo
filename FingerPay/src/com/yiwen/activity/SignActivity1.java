@@ -1,10 +1,15 @@
 package com.yiwen.activity;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.yiwen.fingerpay.R;
+import com.yiwen.util.PhoneNumChecker;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -37,6 +42,9 @@ public class SignActivity1 extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
 				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+		getWindow().setSoftInputMode(
+				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+
 		// 初始化控件
 		IdEditText = (EditText) findViewById(R.id.sign_idtext_et);
 		IdclearButton = (Button) findViewById(R.id.sign_iddelete_btn);
@@ -47,15 +55,35 @@ public class SignActivity1 extends Activity {
 			@Override
 			public boolean onEditorAction(TextView v, int actionId,
 					KeyEvent event) {
-				Intent intent = new Intent(SignActivity1.this, SignActivity2.class);
+				if (IdEditText.getText().length() == 0) {
+					showdialog(0);
+					return false;
+				} else if (!PhoneNumChecker.isMobileNO(IdEditText.getText()
+						.toString())) {
+					showdialog(1);
+					return false;
+				}
+				Intent intent = new Intent(SignActivity1.this,
+						SignActivity2.class);
 				Bundle bundle = new Bundle();
 				bundle.putString("phonenum", IdEditText.getText().toString());
 				intent.putExtras(bundle);
 				startActivity(intent);
-				overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
+				overridePendingTransition(R.anim.in_from_right,
+						R.anim.out_to_left);
 				return false;
 			}
 		});
+
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+
+			@Override
+			public void run() {
+				((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+						.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+			}
+		}, 500);
 	}
 
 	TextWatcher mTextWatcher = new TextWatcher() {
@@ -83,9 +111,48 @@ public class SignActivity1 extends Activity {
 		}
 	};
 
+	public void showdialog(int f) {
+		if (f == 0)
+			new AlertDialog.Builder(this)
+					.setTitle("提醒")
+					.setMessage("请填写手机号码")
+					.setPositiveButton("确定",
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									// TODO Auto-generated method stub
+									((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+											.toggleSoftInput(
+													0,
+													InputMethodManager.HIDE_NOT_ALWAYS);
+								}
+							}).show();
+		else
+			new AlertDialog.Builder(this)
+					.setTitle("提醒")
+					.setMessage("手机号码格式有误，请重新填写")
+					.setPositiveButton("确定",
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									// TODO Auto-generated method stub
+									((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE))
+											.toggleSoftInput(
+													0,
+													InputMethodManager.HIDE_NOT_ALWAYS);
+								}
+							}).show();
+
+	}
+
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.sign_titleback_btn:
+
 			this.finish();
 			overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
 			break;
