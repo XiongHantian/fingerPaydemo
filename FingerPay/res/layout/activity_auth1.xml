@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ebebf1"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/toolbar_bg"
+        android:gravity="center_vertical" >
+
+        <ImageButton
+            android:id="@+id/sign_titleback_btn"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="#00000000"
+            android:onClick="onClick"
+            android:scaleType="fitStart"
+            android:src="@drawable/toolbar_back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="收款金额"
+            android:textColor="#ffffff"
+            android:textSize="22sp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="4"
+        android:background="#FFFFFF"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/money_text"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:gravity="right|bottom"
+            android:paddingBottom="10dp"
+            android:scrollHorizontally="true"
+            android:text="320"
+            android:textColor="#ff000000"
+            android:textSize="30sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        android:background="#000000"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_c"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="C" />
+
+            <Button
+                android:id="@+id/btn_multiple"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="X" />
+
+            <Button
+                android:id="@+id/btn_division"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="÷" />
+
+            <Button
+                android:id="@+id/btn_del"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="DEL" />
+        </LinearLayout>
+         <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_7"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="7" />
+
+            <Button
+                android:id="@+id/btn_8"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="8" />
+
+            <Button
+                android:id="@+id/btn_9"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="9" />
+
+            <Button
+                android:id="@+id/btn_subtract"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="-" />
+        </LinearLayout>
+         <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="4" />
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/btn_6"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="6" />
+
+            <Button
+                android:id="@+id/btn_add"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="+" />
+        </LinearLayout>
+         <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_1"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/btn_2"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="3" />
+
+            <Button
+                android:id="@+id/btn_eq"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="=" />
+        </LinearLayout>
+         <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_0"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="0" />
+
+            <Button
+                android:id="@+id/btn_point"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="." />
+
+            <Button
+                android:id="@+id/btn_00"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_light"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="00" />
+
+            <Button
+                android:id="@+id/btn_finish"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/auth_calbtn_dark"
+                android:textColor="#FFFFFF"
+                android:layout_margin="1dp"
+                android:textSize="30sp"
+                android:text="确认" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

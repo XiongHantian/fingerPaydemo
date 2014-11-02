@@ -9,7 +9,7 @@
         android:required="false" />
 
     <uses-sdk
-        android:minSdkVersion="13"
+        android:minSdkVersion="14"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.WRITE_SMS" />
@@ -49,6 +49,10 @@
         </activity>
         <activity
             android:name="com.yiwen.activity.SignActivity1"
+            android:screenOrientation="landscape" >
+        </activity>
+        <activity
+            android:name="com.yiwen.activity.AuthActivity1"
             android:screenOrientation="landscape" >
         </activity>
     </application>

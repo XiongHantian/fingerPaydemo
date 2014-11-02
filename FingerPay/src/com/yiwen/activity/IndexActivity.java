@@ -27,6 +27,8 @@ public class IndexActivity extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.auth_imageButton:
+			intent = new Intent(IndexActivity.this, AuthActivity1.class);
+			startActivity(intent);
 			break;
 		default:
 			break;
