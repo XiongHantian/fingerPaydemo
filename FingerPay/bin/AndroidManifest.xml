@@ -55,6 +55,10 @@
             android:name="com.yiwen.activity.AuthActivity1"
             android:screenOrientation="landscape" >
         </activity>
+         <activity
+            android:name="com.yiwen.activity.AuthActivity2"
+            android:screenOrientation="landscape" >
+        </activity>
     </application>
 
 </manifest>

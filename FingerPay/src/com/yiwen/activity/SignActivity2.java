@@ -106,7 +106,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		Intent intent = getIntent();
 		Bundle bundle = intent.getExtras();
 		mPhonenum = bundle.getString("phonenum");
-		Log.i(TAG, mPhonenum);
 
 		// ³õÊ¼»¯¿Ø¼þ
 		mLfingerView = (ImageView) findViewById(R.id.sign_lfinger_iv);
