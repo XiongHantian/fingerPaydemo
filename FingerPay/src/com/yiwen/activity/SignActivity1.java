@@ -75,6 +75,9 @@ public class SignActivity1 extends Activity {
 			}
 		});
 
+	}
+	@Override
+	protected void onStart() {
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 
@@ -84,7 +87,8 @@ public class SignActivity1 extends Activity {
 						.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 			}
 		}, 500);
-	}
+		super.onStart();
+	};
 
 	TextWatcher mTextWatcher = new TextWatcher() {
 		@Override

@@ -18,7 +18,6 @@ import com.hisign.AS60xSDK.SDKUtilty;
 import com.ivsign.fingerdatas.FingerdatasAPI;
 import com.ivsign.fingertest.MainActivity;
 import com.ivsign.fingertest.THIDServiceAPI;
-import com.yiwen.activity.SignActivity2.MessageReceiver1;
 import com.yiwen.fingerpay.R;
 import com.yiwen.util.GetValue;
 import com.yiwen.util.Judge;

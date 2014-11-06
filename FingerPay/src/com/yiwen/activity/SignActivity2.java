@@ -8,21 +8,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -51,6 +61,9 @@ import com.ivsign.fingerdatas.FingerdatasAPI;
 import com.ivsign.fingertest.MainActivity;
 import com.ivsign.fingertest.THIDServiceAPI;
 import com.yiwen.fingerpay.R;
+import com.yiwen.network.HttpUtil;
+
+import org.apache.http.NameValuePair; 
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public class SignActivity2 extends Activity implements OnClickListener {
@@ -66,6 +79,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	// 变量
 	public String mPhonenum;
+	FingerMatchTask matchTask_5;
+	FingerMatchTask matchTask_6;
 
 	/*------------双指采集示例--------------*/
 	private boolean isStop = false;
@@ -156,11 +171,126 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			this.finish();
 			overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
 			break;
+		case R.id.sign_btn:
+			signBtnClicked();
+			break;
 		default:
 			break;
 		}
 	}
 
+	private void signBtnClicked() {
+		if (isNetworkAvailable()) {
+			HttpTask task = new HttpTask();
+			task.execute();
+		} else
+			setNetwork();
+	}
+
+	// 设置网络
+	public void setNetwork() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setIcon(android.R.drawable.ic_dialog_alert);
+		builder.setTitle("网络状态");
+		builder.setMessage("当前网络不可用，是否设置网络?");
+		builder.setPositiveButton("设置", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent;
+				if (android.os.Build.VERSION.SDK_INT > 10) {
+					intent = new Intent(
+							android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+				} else {
+					intent = new Intent();
+					ComponentName component = new ComponentName(
+							"com.android.settings",
+							"com.android.settings.WirelessSettings");
+					intent.setComponent(component);
+					intent.setAction("android.intent.action.VIEW");
+				}
+				startActivity(intent);
+			}
+		});
+		builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+		builder.create();
+		builder.show();
+	}
+
+	// 判断网络状态
+	public boolean isNetworkAvailable() {
+		Context context = getApplicationContext();
+		ConnectivityManager connect = (ConnectivityManager) context
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (connect == null) {
+			return false;
+		} else// get all network info
+		{
+			NetworkInfo[] info = connect.getAllNetworkInfo();
+			if (info != null) {
+				for (int i = 0; i < info.length; i++) {
+					if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private class HttpTask extends AsyncTask<String, Integer, String> {
+	
+		
+		@Override
+		protected void onPreExecute() {
+			Log.i(TAG, "onPreExecute() called");
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			Log.i(TAG, "doInBackground(Params... params) called");
+			List<NameValuePair> paramlist = new ArrayList<NameValuePair>(); 
+			paramlist.add(new BasicNameValuePair("acceptor_tel", "18810680163"));
+			paramlist.add(new BasicNameValuePair("template_id", HttpUtil.template_id)); 
+			JSONObject template_param_json = new JSONObject();
+			try {
+				template_param_json.put("param1", "18810680163");
+				template_param_json.put("param2", "110");
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			Log.i(TAG, template_param_json.toString());
+			paramlist.add(new BasicNameValuePair("template_param", template_param_json.toString()));   
+	        paramlist.add(new BasicNameValuePair("app_id", HttpUtil.app_id));   
+	        paramlist.add(new BasicNameValuePair("access_token", HttpUtil.access_token)); 
+	        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String timetamp=   sdf.format( new  Date());
+            Log.i(TAG, timetamp);
+	        paramlist.add(new BasicNameValuePair("timestamp", timetamp)); 
+			String result = HttpUtil.httpPost(HttpUtil.send_url, paramlist);
+			Log.i(TAG, "result:"+result);
+			return result;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... progresses) {
+			Log.i(TAG, "onProgressUpdate(Progress... progresses) called");
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.i(TAG, "onPostExecute(Result result) called");
+			Toast.makeText(getApplicationContext(), "result:"+result,
+				     Toast.LENGTH_SHORT).show();
+		}
+	}
+	
 	// 开始采集指纹
 	public void startGetFinger() {
 		isStop = false;
@@ -169,20 +299,21 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		mDoubleFingers = 2;
 		capFinger1 = true;
 		capFinger2 = true;
-		setButtonStatus(false);
 
-		final FingerMatchTask matchTask_5 = new FingerMatchTask();
+		Log.i(TAG, "startGetFinger");
+		matchTask_5 = new FingerMatchTask();
 		matchTask_5.execute(3);
 
-		final FingerMatchTask matchTask_6 = new FingerMatchTask();
+		matchTask_6 = new FingerMatchTask();
 		matchTask_6.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
-		// matchTask_6.execute(0);
 	}
 
 	@Override
 	protected void onDestroy() {
 
 		Log.d(TAG, "UnregisterReceiver");
+		matchTask_5.onCancelled();
+		matchTask_6.onCancelled();
 		this.unregisterReceiver(receiver3);
 
 		super.onDestroy();
@@ -191,21 +322,7 @@ public class SignActivity2 extends Activity implements OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		/*
-		 * Intent intent = getIntent(); // Log.d(TAG, "intent: " + intent);
-		 * String action = intent.getAction();// 监听USB插入
-		 * 
-		 * // action字符==android.hardware.usb.action.USB_DEVICE_ATTACHED if
-		 * (action.equals("android.hardware.usb.action.USB_DEVICE_ATTACHED")) {
-		 * if (!SensorInited) { initDevice(); } }
-		 */
 
-	}
-
-	public void setButtonStatus(Boolean Value) {
-		// findViewById(R.id.button1).setEnabled(Value);
-		// findViewById(R.id.button2).setEnabled(Value);
-		// findViewById(R.id.button6).setEnabled(Value);
 	}
 
 	// //////注册一个广播事件监听器/////////////////////
@@ -278,80 +395,9 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		}
 	}
 
-	/**
-	 * 调用指纹识别服务
-	 */
-	public int CallFingerIDService(String taskID, String inPath, String jsonArg) {
-		Intent msgIntent = THIDServiceAPI.GenTHIDServiceIntent(
-				THIDServiceAPI.ALGTYPE_FINGERID, taskID, inPath, jsonArg);
-		startService(msgIntent);// 启动服务
-		return 0;
-	}
-
-	/**
-	 * 填写指纹比对参数
-	 * 
-	 * @return 填充json格式字符串
-	 */
-	private String SetTHIDFingerIDArg() {
-		String retjson = "";
-
-		try {
-			JSONObject jsonArg = new JSONObject();
-			jsonArg.put("nCmd", 0); // nCmd = 0：比对/按需加载；1：加载库；2，仅比对；-1，释放
-			jsonArg.put("sDBPath", "/sdcard/MobileFARS/eabisldb_96");// 1万人十指，含员工12人
-			jsonArg.put("nThrd", 600); // 阈值 [0,1000]，默认为600
-			jsonArg.put("nMaxCan", 2); // 最大候选人数，默认为5
-
-			// 指位定义：probeFiles1～probeFiles10 对应 指位 1～10，右手拇指、食指～小拇指，左手拇指～小拇指
-			jsonArg.put("probeFiles2", "/sdcard/DCIM/fingerCapAS602_" + 1
-					+ ".bmp");
-			jsonArg.put("probeFiles3", "/sdcard/DCIM/fingerCapAS602_" + 2
-					+ ".bmp");
-
-			// 编码为一个紧凑的JSON字符串
-			retjson = jsonArg.toString();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return retjson;
-	}
-
-	@SuppressWarnings("static-access")
-	public void delay(int time) {
-		try {
-			Thread.currentThread().sleep(time);// 延时的时间，毫秒
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/*
-	 * 获取指纹图像质量分数
-	 * 
-	 * @Params：fileInPath:指纹Bmp路径
-	 * 
-	 * @Return：inScore[0]:00H~64H
-	 */
-	private String getBmpScore(String bmpfilePath) {
-
-		byte[] pImageData = new byte[256 * 360];
-		byte[] inScore = new byte[2];
-		String score = "";
-		/* 读取（256*360）Bmp格式图像需要上下翻转True */
-		SDKUtilty.ReadBmpToRaw(pImageData, bmpfilePath, true);
-		int nRet = AS60xIO.FCV_GetQualityScore(pImageData, inScore);
-		if (1 == nRet) {
-			score += inScore[0];
-		} else {
-			score = "指纹图像质量获取失败";
-		}
-		return score;
-	}
-
 	/**** 动态显示图片 ****/
 	private Bitmap facebmp1, facebmp2;
-	private String Score1, Score2;
+	private String Score1 = "99", Score2 = "99";
 
 	private class FingerMatchTask extends AsyncTask<Integer, Integer, Integer> {
 
@@ -361,6 +407,7 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			if (isCancelled())
 				return;
 
+			Log.i(TAG, "onProgress:" + progress[0]);
 			switch (progress[0]) {
 
 			case 0:
@@ -370,42 +417,24 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			case 1:
 				mLfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 				mLfingerView.setImageBitmap(facebmp1);
-				if (Integer.parseInt(Score1) < 60)
-					mLfingerText.setTextColor(Color.RED);
-				else
-					mLfingerText.setTextColor(Color.BLACK);
-
-				mLfingerText.setText("图像质量：" + Score1);
-				mLfingerView.invalidate();
 
 				break;
 
 			case 2:
 				mRfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 				mRfingerView.setImageBitmap(facebmp2);
-				if (Integer.parseInt(Score2) < 60)
-					mLfingerText.setTextColor(Color.RED);
-				else
-					mLfingerText.setTextColor(Color.BLACK);
-				mRfingerText.setText("图像质量：" + Score2);
-				mRfingerView.invalidate();
 				break;
 
 			case 3:
-				setButtonStatus(true);
 				break;
 			case 4:
 				printHint("指令发送失败！");
 				break;
 			case 5:
-				// mLfingerView.setImageResource(R.drawable.finger_bg);
-				// mRfingerView.setImageResource(R.drawable.finger_bg);
-				// scoreLeft.setText("");
-				// scoreRight.setText("");
 				break;
 
 			default:
-				// waitdialog.setMessage("default");//....
+				break;
 			}
 		}
 
@@ -419,11 +448,15 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 		@Override
 		protected void onCancelled() {
+			Log.i(TAG, "onCanceled");
+			super.onCancelled();
 		}
 
 		/* The Task body */
 		@Override
 		protected Integer doInBackground(Integer... params) {
+			if (isCancelled())
+				return null;
 
 			int nType = params[0];
 			int ret = 0;
@@ -433,25 +466,14 @@ public class SignActivity2 extends Activity implements OnClickListener {
 				String cmdString = "libfx2_finger190.so 2109 7638 tcs_finger "
 						+ nType + " 73728 4096 " + Filename;
 				FingerCntOld = MainActivity.jniFingerTCSCapStatus();
-				// long nTimeStart = System.currentTimeMillis();
 				ret = MainActivity.jniFinger190CapProcess(cmdString);
-				// int nTimeCost = (int)((System.currentTimeMillis() -
-				// nTimeStart));
-				// print("耗时1/2=："+nTimeCost+"毫秒");
-
-				// print("FingerCntOld12==="+FingerCntOld);
 			} else if (nType == 3)// 双指采集
 			{
 				String cmdString = "libfx2_finger190.so 2109 7638 tcs_finger "
 						+ mDoubleFingers + " 73728 4096 ";
 
 				FingerCntOld = MainActivity.jniFingerTCSCapStatus();
-				// print("FingerCntOld3==="+FingerCntOld);
-				// long nTimeStart = System.currentTimeMillis();
 				ret = MainActivity.jniFingerTCSCapFingers(cmdString);
-				// int nTimeCost = (int)((System.currentTimeMillis() -
-				// nTimeStart));
-				// print("耗时3=："+nTimeCost+"毫秒");
 			} else if (nType == 0) {
 				int delCount = 0;// 延时一段时间后删除旧指纹
 				while (!isStop) {
@@ -462,16 +484,13 @@ public class SignActivity2 extends Activity implements OnClickListener {
 						// 获取指纹采集的状态：是否完成
 						FingerCnt = MainActivity.jniFingerTCSCapStatus();
 
-						// print("FingerCnt==="+FingerCnt);
 						if (FingerCnt > FingerCntOld)// 有新指纹则会增加
 						{
 
 							delCount = 0;
 							FingerCntOld = FingerCnt;
 							if (capFinger1) {
-								// print("publish capFinger1!!!!");
 								FINGEREROLL1[2] = "/sdcard/DCIM/fingerCapAS602_1.bmp";
-								Score1 = getBmpScore(FINGEREROLL1[2]);
 
 								facebmp1 = BitmapFactory
 										.decodeFile(FINGEREROLL1[2]);
@@ -486,9 +505,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 							}
 
 							if (capFinger2) {
-								// print("publish capFinger2!!!!");
+
 								FINGEREROLL2[2] = "/sdcard/DCIM/fingerCapAS602_2.bmp";
-								Score2 = getBmpScore(FINGEREROLL2[2]);
 
 								facebmp2 = BitmapFactory
 										.decodeFile(FINGEREROLL2[2]);
@@ -501,44 +519,15 @@ public class SignActivity2 extends Activity implements OnClickListener {
 								}
 							}
 
-							if (isAutoUp && isMatchIdle && capFinger1
-									&& capFinger2
-									&& Integer.parseInt(Score1) >= 50
-									&& Integer.parseInt(Score2) >= 50) {
-
-								isMatchIdle = false;
-								Log.d(TAG, "CallFingerIDService--isAutoUp:Ture");
-								CallFingerIDService("fingeridtest001",
-										"/sdcard/MobileFARS/",
-										SetTHIDFingerIDArg());
-								delay(100);
-							}
 							break;
 						} else {
 
 							delCount++;
 							if (delCount > 10) {
 								delCount = 0;
-								// deleteFile("/sdcard/DCIM/fingerCapAS602_1.bmp");
-								// deleteFile("/sdcard/DCIM/fingerCapAS602_2.bmp");
-								publishProgress(5);
 							}
 
-							delay(80);// 双指一起采集大约700左右毫秒
 						}
-					}
-					if (!isContinue) {
-						publishProgress(3);
-						MainActivity.jniFingerTCSCapStop(1);
-						isStop = true;
-						break;
-					}
-					if (ret == -311 || ret == -312 || ret == -313)// 单次采集或采集指令发送接收失败
-					{
-						publishProgress(4);
-						MainActivity.jniFingerTCSCapStop(1);
-						isStop = true;
-						break;
 					}
 				}
 
