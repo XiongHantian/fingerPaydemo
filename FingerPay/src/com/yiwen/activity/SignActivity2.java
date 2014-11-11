@@ -451,7 +451,6 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	/**** ¶¯Ì¬ÏÔÊ¾Í¼Æ¬ ****/
 	private Bitmap facebmp1, facebmp2;
-	private String Score1 = "99", Score2 = "99";
 
 	private class FingerMatchTask extends AsyncTask<Integer, Integer, Integer> {
 

@@ -61,9 +61,11 @@ public class AuthActivity2 extends Activity {
 	ImageView mRfingerView;
 	LinearLayout mCropLayout1;
 	LinearLayout mCropLayout2;
-	
+
 	// 变量
 	String mMoney;
+	FingerMatchTask matchTask_5;
+	FingerMatchTask matchTask_6;
 
 	// 常量
 	public static final String TAG = "AuthActivity2";
@@ -115,7 +117,7 @@ public class AuthActivity2 extends Activity {
 		mRfingerView = (ImageView) findViewById(R.id.sign_rfinger_iv);
 		mCropLayout1 = (LinearLayout) findViewById(R.id.capture_crop_layout1);
 		mCropLayout2 = (LinearLayout) findViewById(R.id.capture_crop_layout2);
-		
+
 		// 初始化动画
 		mQrLineView1 = (ImageView) findViewById(R.id.capture_scan_line1);
 		mQrLineView2 = (ImageView) findViewById(R.id.capture_scan_line2);
@@ -176,6 +178,16 @@ public class AuthActivity2 extends Activity {
 		}
 	}
 
+	// 结束捕捉指纹的进程
+	public void stopFingerCap() {
+		if (matchTask_5 != null
+				&& matchTask_5.getStatus() == AsyncTask.Status.RUNNING)
+			matchTask_5.onCancelled(); // 如果Task还在运行，则先取消它
+		if (matchTask_6 != null
+				&& matchTask_6.getStatus() == AsyncTask.Status.RUNNING)
+			matchTask_6.onCancelled(); // 如果Task还在运行，则先取消它
+	}
+
 	// 开始采集指纹
 	public void startGetFinger() {
 		isStop = false;
@@ -184,44 +196,28 @@ public class AuthActivity2 extends Activity {
 		mDoubleFingers = 2;
 		capFinger1 = true;
 		capFinger2 = true;
-		setButtonStatus(false);
 
-		final FingerMatchTask matchTask_5 = new FingerMatchTask();
+		Log.i(TAG, "startGetFinger");
+		matchTask_5 = new FingerMatchTask();
 		matchTask_5.execute(3);
 
-		final FingerMatchTask matchTask_6 = new FingerMatchTask();
+		matchTask_6 = new FingerMatchTask();
 		matchTask_6.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
-		// matchTask_6.execute(0);
 	}
 
 	@Override
 	protected void onDestroy() {
-
 		Log.d(TAG, "UnregisterReceiver");
+		stopFingerCap();
 		this.unregisterReceiver(receiver3);
-
 		super.onDestroy();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		/*
-		 * Intent intent = getIntent(); // Log.d(TAG, "intent: " + intent);
-		 * String action = intent.getAction();// 监听USB插入
-		 * 
-		 * // action字符==android.hardware.usb.action.USB_DEVICE_ATTACHED if
-		 * (action.equals("android.hardware.usb.action.USB_DEVICE_ATTACHED")) {
-		 * if (!SensorInited) { initDevice(); } }
-		 */
-
 	}
 
-	public void setButtonStatus(Boolean Value) {
-		// findViewById(R.id.button1).setEnabled(Value);
-		// findViewById(R.id.button2).setEnabled(Value);
-		// findViewById(R.id.button6).setEnabled(Value);
-	}
 
 	// //////注册一个广播事件监听器/////////////////////
 	public void RegistMessage() {
@@ -293,89 +289,20 @@ public class AuthActivity2 extends Activity {
 		}
 	}
 
-	/**
-	 * 调用指纹识别服务
-	 */
-	public int CallFingerIDService(String taskID, String inPath, String jsonArg) {
-		Intent msgIntent = THIDServiceAPI.GenTHIDServiceIntent(
-				THIDServiceAPI.ALGTYPE_FINGERID, taskID, inPath, jsonArg);
-		startService(msgIntent);// 启动服务
-		return 0;
-	}
-
-	/**
-	 * 填写指纹比对参数
-	 * 
-	 * @return 填充json格式字符串
-	 */
-	private String SetTHIDFingerIDArg() {
-		String retjson = "";
-
-		try {
-			JSONObject jsonArg = new JSONObject();
-			jsonArg.put("nCmd", 0); // nCmd = 0：比对/按需加载；1：加载库；2，仅比对；-1，释放
-			jsonArg.put("sDBPath", "/sdcard/MobileFARS/eabisldb_96");// 1万人十指，含员工12人
-			jsonArg.put("nThrd", 600); // 阈值 [0,1000]，默认为600
-			jsonArg.put("nMaxCan", 2); // 最大候选人数，默认为5
-
-			// 指位定义：probeFiles1～probeFiles10 对应 指位 1～10，右手拇指、食指～小拇指，左手拇指～小拇指
-			jsonArg.put("probeFiles2", "/sdcard/DCIM/fingerCapAS602_" + 1
-					+ ".bmp");
-			jsonArg.put("probeFiles3", "/sdcard/DCIM/fingerCapAS602_" + 2
-					+ ".bmp");
-
-			// 编码为一个紧凑的JSON字符串
-			retjson = jsonArg.toString();
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return retjson;
-	}
-
-	@SuppressWarnings("static-access")
-	public void delay(int time) {
-		try {
-			Thread.currentThread().sleep(time);// 延时的时间，毫秒
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/*
-	 * 获取指纹图像质量分数
-	 * 
-	 * @Params：fileInPath:指纹Bmp路径
-	 * 
-	 * @Return：inScore[0]:00H~64H
-	 */
-	private String getBmpScore(String bmpfilePath) {
-
-		byte[] pImageData = new byte[256 * 360];
-		byte[] inScore = new byte[2];
-		String score = "";
-		/* 读取（256*360）Bmp格式图像需要上下翻转True */
-		SDKUtilty.ReadBmpToRaw(pImageData, bmpfilePath, true);
-		int nRet = AS60xIO.FCV_GetQualityScore(pImageData, inScore);
-		if (1 == nRet) {
-			score += inScore[0];
-		} else {
-			score = "指纹图像质量获取失败";
-		}
-		return score;
-	}
-
 	/**** 动态显示图片 ****/
 	private Bitmap facebmp1, facebmp2;
-	private String Score1, Score2;
 
 	private class FingerMatchTask extends AsyncTask<Integer, Integer, Integer> {
+
+		private boolean isCancelled = false;
 
 		@Override
 		protected void onProgressUpdate(Integer... progress) {
 
-			if (isCancelled())
+			if (isCancelled)
 				return;
 
+			Log.i(TAG, "onProgress:" + progress[0]);
 			switch (progress[0]) {
 
 			case 0:
@@ -384,7 +311,7 @@ public class AuthActivity2 extends Activity {
 
 			case 1:
 				mLfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-				//mLfingerView.setImageBitmap(facebmp1);
+				// mLfingerView.setImageBitmap(facebmp1);
 				mLfingerView.setImageResource(R.drawable.finger_ok_bg);
 				mQrLineView1.clearAnimation();
 				mQrLineView1.setVisibility(View.GONE);
@@ -395,7 +322,7 @@ public class AuthActivity2 extends Activity {
 
 			case 2:
 				mRfingerView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-				//mRfingerView.setImageBitmap(facebmp2);
+				// mRfingerView.setImageBitmap(facebmp2);
 				mRfingerView.setImageResource(R.drawable.finger_ok_bg);
 				mQrLineView2.clearAnimation();
 				mQrLineView2.setVisibility(View.GONE);
@@ -404,20 +331,15 @@ public class AuthActivity2 extends Activity {
 				break;
 
 			case 3:
-				setButtonStatus(true);
 				break;
 			case 4:
 				printHint("指令发送失败！");
 				break;
 			case 5:
-				// mLfingerView.setImageResource(R.drawable.finger_bg);
-				// mRfingerView.setImageResource(R.drawable.finger_bg);
-				// scoreLeft.setText("");
-				// scoreRight.setText("");
 				break;
 
 			default:
-				// waitdialog.setMessage("default");//....
+				break;
 			}
 		}
 
@@ -427,15 +349,21 @@ public class AuthActivity2 extends Activity {
 
 		@Override
 		protected void onPostExecute(Integer result) {
+			Log.i(TAG, "FingerMatchTask Canceled!");
 		}
 
 		@Override
 		protected void onCancelled() {
+			Log.i(TAG, "onCanceled");
+			isCancelled = true;
+			super.onCancelled();
 		}
 
 		/* The Task body */
 		@Override
 		protected Integer doInBackground(Integer... params) {
+			if (isCancelled)
+				return null;
 
 			int nType = params[0];
 			int ret = 0;
@@ -445,45 +373,33 @@ public class AuthActivity2 extends Activity {
 				String cmdString = "libfx2_finger190.so 2109 7638 tcs_finger "
 						+ nType + " 73728 4096 " + Filename;
 				FingerCntOld = MainActivity.jniFingerTCSCapStatus();
-				// long nTimeStart = System.currentTimeMillis();
 				ret = MainActivity.jniFinger190CapProcess(cmdString);
-				// int nTimeCost = (int)((System.currentTimeMillis() -
-				// nTimeStart));
-				// print("耗时1/2=："+nTimeCost+"毫秒");
-
-				// print("FingerCntOld12==="+FingerCntOld);
 			} else if (nType == 3)// 双指采集
 			{
+				if (isCancelled)
+					return null;
 				String cmdString = "libfx2_finger190.so 2109 7638 tcs_finger "
 						+ mDoubleFingers + " 73728 4096 ";
 
 				FingerCntOld = MainActivity.jniFingerTCSCapStatus();
-				// print("FingerCntOld3==="+FingerCntOld);
-				// long nTimeStart = System.currentTimeMillis();
 				ret = MainActivity.jniFingerTCSCapFingers(cmdString);
-				// int nTimeCost = (int)((System.currentTimeMillis() -
-				// nTimeStart));
-				// print("耗时3=："+nTimeCost+"毫秒");
 			} else if (nType == 0) {
 				int delCount = 0;// 延时一段时间后删除旧指纹
 				while (!isStop) {
-					if (isCancelled())
+					if (isCancelled)
 						return null;
 					for (int i = 0; i < 10; i++)// 800ms
 					{
 						// 获取指纹采集的状态：是否完成
 						FingerCnt = MainActivity.jniFingerTCSCapStatus();
 
-						// print("FingerCnt==="+FingerCnt);
 						if (FingerCnt > FingerCntOld)// 有新指纹则会增加
 						{
 
 							delCount = 0;
 							FingerCntOld = FingerCnt;
 							if (capFinger1) {
-								// print("publish capFinger1!!!!");
 								FINGEREROLL1[2] = "/sdcard/DCIM/fingerCapAS602_1.bmp";
-								Score1 = getBmpScore(FINGEREROLL1[2]);
 
 								facebmp1 = BitmapFactory
 										.decodeFile(FINGEREROLL1[2]);
@@ -498,9 +414,8 @@ public class AuthActivity2 extends Activity {
 							}
 
 							if (capFinger2) {
-								// print("publish capFinger2!!!!");
+
 								FINGEREROLL2[2] = "/sdcard/DCIM/fingerCapAS602_2.bmp";
-								Score2 = getBmpScore(FINGEREROLL2[2]);
 
 								facebmp2 = BitmapFactory
 										.decodeFile(FINGEREROLL2[2]);
@@ -513,44 +428,15 @@ public class AuthActivity2 extends Activity {
 								}
 							}
 
-							if (isAutoUp && isMatchIdle && capFinger1
-									&& capFinger2
-									&& Integer.parseInt(Score1) >= 50
-									&& Integer.parseInt(Score2) >= 50) {
-
-								isMatchIdle = false;
-								Log.d(TAG, "CallFingerIDService--isAutoUp:Ture");
-								CallFingerIDService("fingeridtest001",
-										"/sdcard/MobileFARS/",
-										SetTHIDFingerIDArg());
-								delay(100);
-							}
 							break;
 						} else {
 
 							delCount++;
 							if (delCount > 10) {
 								delCount = 0;
-								// deleteFile("/sdcard/DCIM/fingerCapAS602_1.bmp");
-								// deleteFile("/sdcard/DCIM/fingerCapAS602_2.bmp");
-								publishProgress(5);
 							}
 
-							delay(80);// 双指一起采集大约700左右毫秒
 						}
-					}
-					if (!isContinue) {
-						publishProgress(3);
-						MainActivity.jniFingerTCSCapStop(1);
-						isStop = true;
-						break;
-					}
-					if (ret == -311 || ret == -312 || ret == -313)// 单次采集或采集指令发送接收失败
-					{
-						publishProgress(4);
-						MainActivity.jniFingerTCSCapStop(1);
-						isStop = true;
-						break;
 					}
 				}
 
@@ -774,8 +660,10 @@ public class AuthActivity2 extends Activity {
 			RootCommand(usbRoot);
 			String usbRoot1 = "chmod 666 /dev/bus/usb/002/*";
 			RootCommand(usbRoot1);
-			/*String setTimeCmd = "/system/bin/date -s 20140401.000000";
-			RootCommand(setTimeCmd);*/
+			/*
+			 * String setTimeCmd = "/system/bin/date -s 20140401.000000";
+			 * RootCommand(setTimeCmd);
+			 */
 
 			// runCmd(usbRoot);
 			mSensorType = 3;
