@@ -63,7 +63,9 @@ import com.ivsign.fingertest.THIDServiceAPI;
 import com.yiwen.fingerpay.R;
 import com.yiwen.network.HttpUtil;
 
-import org.apache.http.NameValuePair; 
+import org.apache.http.NameValuePair;
+
+import java.util.Random;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR1)
 public class SignActivity2 extends Activity implements OnClickListener {
@@ -76,11 +78,21 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	// 常量
 	public static final String TAG = "SignActivity2";
+	
+	private static final char[] CHARS = {  
+        '2', '3', '4', '5', '6', '7', '8', '9',  
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'l', 'm',   
+        'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',  
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',   
+        'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'  
+    };  
 
 	// 变量
 	public String mPhonenum;
+	public String mCode;
 	FingerMatchTask matchTask_5;
 	FingerMatchTask matchTask_6;
+	private Random random = new Random();
 
 	/*------------双指采集示例--------------*/
 	private boolean isStop = false;
@@ -181,12 +193,22 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	private void signBtnClicked() {
 		if (isNetworkAvailable()) {
+			stopFingerCap();
 			HttpTask task = new HttpTask();
-			task.execute();
+			task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		} else
 			setNetwork();
 	}
 
+	//获取验证码  
+    private String createCode() {  
+        StringBuilder buffer = new StringBuilder();  
+        for (int i = 0; i < 4; i++) {  
+            buffer.append(CHARS[random.nextInt(CHARS.length)]);  
+        }  
+        return buffer.toString();  
+    }  
+	
 	// 设置网络
 	public void setNetwork() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -245,8 +267,7 @@ public class SignActivity2 extends Activity implements OnClickListener {
 	}
 
 	private class HttpTask extends AsyncTask<String, Integer, String> {
-	
-		
+
 		@Override
 		protected void onPreExecute() {
 			Log.i(TAG, "onPreExecute() called");
@@ -255,26 +276,30 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		@Override
 		protected String doInBackground(String... params) {
 			Log.i(TAG, "doInBackground(Params... params) called");
-			List<NameValuePair> paramlist = new ArrayList<NameValuePair>(); 
-			paramlist.add(new BasicNameValuePair("acceptor_tel", "18810680163"));
-			paramlist.add(new BasicNameValuePair("template_id", HttpUtil.template_id)); 
+			List<NameValuePair> paramlist = new ArrayList<NameValuePair>();
+			paramlist
+					.add(new BasicNameValuePair("acceptor_tel", "18810680163"));
+			paramlist.add(new BasicNameValuePair("template_id",
+					HttpUtil.template_id));
 			JSONObject template_param_json = new JSONObject();
 			try {
-				template_param_json.put("param1", "18810680163");
-				template_param_json.put("param2", "110");
+				template_param_json.put("param1", mPhonenum);
+				mCode = createCode();
+				template_param_json.put("param2", mCode);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			Log.i(TAG, template_param_json.toString());
-			paramlist.add(new BasicNameValuePair("template_param", template_param_json.toString()));   
-	        paramlist.add(new BasicNameValuePair("app_id", HttpUtil.app_id));   
-	        paramlist.add(new BasicNameValuePair("access_token", HttpUtil.access_token)); 
-	        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String timetamp=   sdf.format( new  Date());
-            Log.i(TAG, timetamp);
-	        paramlist.add(new BasicNameValuePair("timestamp", timetamp)); 
+			paramlist.add(new BasicNameValuePair("template_param",
+					template_param_json.toString()));
+			paramlist.add(new BasicNameValuePair("app_id", HttpUtil.app_id));
+			paramlist.add(new BasicNameValuePair("access_token",
+					HttpUtil.access_token));
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String timetamp = sdf.format(new Date());
+			Log.i(TAG, timetamp);
+			paramlist.add(new BasicNameValuePair("timestamp", timetamp));
 			String result = HttpUtil.httpPost(HttpUtil.send_url, paramlist);
-			Log.i(TAG, "result:"+result);
 			return result;
 		}
 
@@ -286,11 +311,32 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		@Override
 		protected void onPostExecute(String result) {
 			Log.i(TAG, "onPostExecute(Result result) called");
-			Toast.makeText(getApplicationContext(), "result:"+result,
-				     Toast.LENGTH_SHORT).show();
+			try {
+				JSONObject result_json = new JSONObject(result);
+				if(result_json.getString("res_message").equals("Success"))
+				{
+					Toast.makeText(getApplicationContext(), "成功",
+							Toast.LENGTH_SHORT).show();
+					Intent intent = new Intent(SignActivity2.this,
+							SignActivity3.class);
+					Bundle bundle = new Bundle();
+					bundle.putString("code",mCode );
+					intent.putExtras(bundle);
+					startActivity(intent);
+					overridePendingTransition(R.anim.in_from_right,
+							R.anim.out_to_left);
+				}
+				else
+				{
+					Toast.makeText(getApplicationContext(), "验证短信发送失败，请检查网络连接是否正常",
+							Toast.LENGTH_SHORT).show();
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 	}
-	
+
 	// 开始采集指纹
 	public void startGetFinger() {
 		isStop = false;
@@ -308,14 +354,22 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		matchTask_6.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
 	}
 
+	// 结束捕捉指纹的进程
+	public void stopFingerCap() {
+		if (matchTask_5 != null
+				&& matchTask_5.getStatus() == AsyncTask.Status.RUNNING)
+			matchTask_5.onCancelled(); // 如果Task还在运行，则先取消它
+		if (matchTask_6 != null
+				&& matchTask_6.getStatus() == AsyncTask.Status.RUNNING)
+			matchTask_6.onCancelled(); // 如果Task还在运行，则先取消它
+	}
+
 	@Override
 	protected void onDestroy() {
 
 		Log.d(TAG, "UnregisterReceiver");
-		matchTask_5.onCancelled();
-		matchTask_6.onCancelled();
+		stopFingerCap();
 		this.unregisterReceiver(receiver3);
-
 		super.onDestroy();
 	}
 
@@ -401,10 +455,12 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	private class FingerMatchTask extends AsyncTask<Integer, Integer, Integer> {
 
+		private boolean isCancelled = false;
+
 		@Override
 		protected void onProgressUpdate(Integer... progress) {
 
-			if (isCancelled())
+			if (isCancelled)
 				return;
 
 			Log.i(TAG, "onProgress:" + progress[0]);
@@ -444,18 +500,20 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 		@Override
 		protected void onPostExecute(Integer result) {
+			Log.i(TAG, "FingerMatchTask Canceled!");
 		}
 
 		@Override
 		protected void onCancelled() {
 			Log.i(TAG, "onCanceled");
+			isCancelled = true;
 			super.onCancelled();
 		}
 
 		/* The Task body */
 		@Override
 		protected Integer doInBackground(Integer... params) {
-			if (isCancelled())
+			if (isCancelled)
 				return null;
 
 			int nType = params[0];
@@ -469,6 +527,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 				ret = MainActivity.jniFinger190CapProcess(cmdString);
 			} else if (nType == 3)// 双指采集
 			{
+				if (isCancelled)
+					return null;
 				String cmdString = "libfx2_finger190.so 2109 7638 tcs_finger "
 						+ mDoubleFingers + " 73728 4096 ";
 
@@ -477,7 +537,7 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			} else if (nType == 0) {
 				int delCount = 0;// 延时一段时间后删除旧指纹
 				while (!isStop) {
-					if (isCancelled())
+					if (isCancelled)
 						return null;
 					for (int i = 0; i < 10; i++)// 800ms
 					{
@@ -751,8 +811,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			RootCommand(usbRoot);
 			String usbRoot1 = "chmod 666 /dev/bus/usb/002/*";
 			RootCommand(usbRoot1);
-			String setTimeCmd = "/system/bin/date -s 20140401.000000";
-			RootCommand(setTimeCmd);
+			/*String setTimeCmd = "/system/bin/date -s 20140401.000000";
+			RootCommand(setTimeCmd);*/
 
 			// runCmd(usbRoot);
 			mSensorType = 3;

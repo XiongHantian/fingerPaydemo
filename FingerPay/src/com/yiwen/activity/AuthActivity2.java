@@ -774,8 +774,8 @@ public class AuthActivity2 extends Activity {
 			RootCommand(usbRoot);
 			String usbRoot1 = "chmod 666 /dev/bus/usb/002/*";
 			RootCommand(usbRoot1);
-			String setTimeCmd = "/system/bin/date -s 20140401.000000";
-			RootCommand(setTimeCmd);
+			/*String setTimeCmd = "/system/bin/date -s 20140401.000000";
+			RootCommand(setTimeCmd);*/
 
 			// runCmd(usbRoot);
 			mSensorType = 3;

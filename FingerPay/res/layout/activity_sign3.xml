@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="注册手机号"
+            android:text="输入验证码"
             android:textColor="#ffffff"
             android:textSize="22sp" />
     </RelativeLayout>
@@ -46,22 +46,20 @@
             android:layout_marginTop="3dp"
             android:paddingLeft="5dp"
             android:scaleType="fitStart"
-            android:src="@drawable/sign_phonenum" />
+            android:src="@drawable/sign_vericode" />
 
         <EditText
             android:id="@+id/sign_idtext_et"
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingLeft="5dp"
             android:background="@null"
-            android:hint="点击填写手机号码"
+            android:hint="点击填写验证码"
             android:imeOptions="flagNoExtractUi"
-            android:phoneNumber="true"
             android:singleLine="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:text="18810680163"
+            android:text=""
             android:textSize="21sp" />
 
         <Button
