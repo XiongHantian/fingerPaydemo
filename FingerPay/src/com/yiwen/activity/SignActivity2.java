@@ -78,14 +78,12 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	// 常量
 	public static final String TAG = "SignActivity2";
-	
-	private static final char[] CHARS = {  
-        '2', '3', '4', '5', '6', '7', '8', '9',  
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'l', 'm',   
-        'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',  
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',   
-        'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'  
-    };  
+
+	private static final char[] CHARS = { '2', '3', '4', '5', '6', '7', '8',
+			'9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
+			'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A',
+			'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+			'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
 	// 变量
 	public String mPhonenum;
@@ -193,22 +191,21 @@ public class SignActivity2 extends Activity implements OnClickListener {
 
 	private void signBtnClicked() {
 		if (isNetworkAvailable()) {
-			stopFingerCap();
 			HttpTask task = new HttpTask();
 			task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		} else
 			setNetwork();
 	}
 
-	//获取验证码  
-    private String createCode() {  
-        StringBuilder buffer = new StringBuilder();  
-        for (int i = 0; i < 4; i++) {  
-            buffer.append(CHARS[random.nextInt(CHARS.length)]);  
-        }  
-        return buffer.toString();  
-    }  
-	
+	// 获取验证码
+	private String createCode() {
+		StringBuilder buffer = new StringBuilder();
+		for (int i = 0; i < 4; i++) {
+			buffer.append(CHARS[random.nextInt(CHARS.length)]);
+		}
+		return buffer.toString();
+	}
+
 	// 设置网络
 	public void setNetwork() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -276,6 +273,11 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		@Override
 		protected String doInBackground(String... params) {
 			Log.i(TAG, "doInBackground(Params... params) called");
+			String result = HttpUtil.uploadFingerAndId(HttpUtil.SIGN_URL,
+					mPhonenum);
+			Log.i(TAG, "PayResult:" + result);
+			if (!result.equals("success"))
+				return "fail";
 			List<NameValuePair> paramlist = new ArrayList<NameValuePair>();
 			paramlist
 					.add(new BasicNameValuePair("acceptor_tel", "18810680163"));
@@ -299,7 +301,8 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			String timetamp = sdf.format(new Date());
 			Log.i(TAG, timetamp);
 			paramlist.add(new BasicNameValuePair("timestamp", timetamp));
-			String result = HttpUtil.httpPost(HttpUtil.send_url, paramlist);
+			result = HttpUtil.httpPost(HttpUtil.send_url, paramlist);
+			Log.i(TAG, "MesgResult:" + result);
 			return result;
 		}
 
@@ -311,29 +314,34 @@ public class SignActivity2 extends Activity implements OnClickListener {
 		@Override
 		protected void onPostExecute(String result) {
 			Log.i(TAG, "onPostExecute(Result result) called");
-			try {
-				JSONObject result_json = new JSONObject(result);
-				if(result_json.getString("res_message").equals("Success"))
-				{
-					Toast.makeText(getApplicationContext(), "成功",
-							Toast.LENGTH_SHORT).show();
-					Intent intent = new Intent(SignActivity2.this,
-							SignActivity3.class);
-					Bundle bundle = new Bundle();
-					bundle.putString("code",mCode );
-					intent.putExtras(bundle);
-					startActivity(intent);
-					overridePendingTransition(R.anim.in_from_right,
-							R.anim.out_to_left);
+			Log.i(TAG, "PostResult:" + result);
+			if (result.equals("fail")) {
+				new AlertDialog.Builder(SignActivity2.this).setTitle("提醒")
+						.setMessage("指纹注册失败").setPositiveButton("确定", null)
+						.show();
+			} else
+				try {
+					JSONObject result_json = new JSONObject(result);
+					if (result_json.getString("res_message").equals("Success")) {
+						Toast.makeText(getApplicationContext(), "成功",
+								Toast.LENGTH_SHORT).show();
+						Intent intent = new Intent(SignActivity2.this,
+								SignActivity3.class);
+						Bundle bundle = new Bundle();
+						bundle.putString("code", mCode);
+						intent.putExtras(bundle);
+						startActivity(intent);
+						overridePendingTransition(R.anim.in_from_right,
+								R.anim.out_to_left);
+					} else {
+						new AlertDialog.Builder(SignActivity2.this)
+								.setTitle("提醒")
+								.setMessage("验证短信发送失败，请检查网络连接是否正常")
+								.setPositiveButton("确定", null).show();
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
 				}
-				else
-				{
-					Toast.makeText(getApplicationContext(), "验证短信发送失败，请检查网络连接是否正常",
-							Toast.LENGTH_SHORT).show();
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -810,8 +818,10 @@ public class SignActivity2 extends Activity implements OnClickListener {
 			RootCommand(usbRoot);
 			String usbRoot1 = "chmod 666 /dev/bus/usb/002/*";
 			RootCommand(usbRoot1);
-			/*String setTimeCmd = "/system/bin/date -s 20140401.000000";
-			RootCommand(setTimeCmd);*/
+			/*
+			 * String setTimeCmd = "/system/bin/date -s 20140401.000000";
+			 * RootCommand(setTimeCmd);
+			 */
 
 			// runCmd(usbRoot);
 			mSensorType = 3;

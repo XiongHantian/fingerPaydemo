@@ -8,7 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,12 +25,16 @@ import com.ivsign.fingerdatas.FingerdatasAPI;
 import com.ivsign.fingertest.MainActivity;
 import com.ivsign.fingertest.THIDServiceAPI;
 import com.yiwen.fingerpay.R;
+import com.yiwen.network.HttpUtil;
 import com.yiwen.util.GetValue;
 import com.yiwen.util.Judge;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -34,6 +44,8 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -205,6 +217,98 @@ public class AuthActivity2 extends Activity {
 		matchTask_6.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 0);
 	}
 
+	private void sendPayRequest() {
+		if (isNetworkAvailable()) {
+			HttpTask task = new HttpTask();
+			task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		} else
+			setNetwork();
+	}
+
+	// ÉèÖÃÍøÂç
+	public void setNetwork() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setIcon(android.R.drawable.ic_dialog_alert);
+		builder.setTitle("ÍøÂç×´Ì¬");
+		builder.setMessage("µ±Ç°ÍøÂç²»¿ÉÓÃ£¬ÊÇ·ñÉèÖÃÍøÂç?");
+		builder.setPositiveButton("ÉèÖÃ", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent;
+				if (android.os.Build.VERSION.SDK_INT > 10) {
+					intent = new Intent(
+							android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+				} else {
+					intent = new Intent();
+					ComponentName component = new ComponentName(
+							"com.android.settings",
+							"com.android.settings.WirelessSettings");
+					intent.setComponent(component);
+					intent.setAction("android.intent.action.VIEW");
+				}
+				startActivity(intent);
+			}
+		});
+		builder.setNegativeButton("È¡Ïû", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+		builder.create();
+		builder.show();
+	}
+
+	// ÅÐ¶ÏÍøÂç×´Ì¬
+	public boolean isNetworkAvailable() {
+		Context context = getApplicationContext();
+		ConnectivityManager connect = (ConnectivityManager) context
+				.getSystemService(Context.CONNECTIVITY_SERVICE);
+		if (connect == null) {
+			return false;
+		} else// get all network info
+		{
+			NetworkInfo[] info = connect.getAllNetworkInfo();
+			if (info != null) {
+				for (int i = 0; i < info.length; i++) {
+					if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private class HttpTask extends AsyncTask<String, Integer, String> {
+
+		@Override
+		protected void onPreExecute() {
+			Log.i(TAG, "onPreExecute() called");
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			Log.i(TAG, "doInBackground(Params... params) called");
+			String result = HttpUtil.uploadFinger(HttpUtil.AUTH_URL);
+			return result;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... progresses) {
+			Log.i(TAG, "onProgressUpdate(Progress... progresses) called");
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			Log.i(TAG, "onPostExecute(Result result) called");
+			Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT)
+					.show();
+		}
+	}
+
 	@Override
 	protected void onDestroy() {
 		Log.d(TAG, "UnregisterReceiver");
@@ -217,7 +321,6 @@ public class AuthActivity2 extends Activity {
 	public void onResume() {
 		super.onResume();
 	}
-
 
 	// //////×¢²áÒ»¸ö¹ã²¥ÊÂ¼þ¼àÌýÆ÷/////////////////////
 	public void RegistMessage() {
@@ -295,6 +398,8 @@ public class AuthActivity2 extends Activity {
 	private class FingerMatchTask extends AsyncTask<Integer, Integer, Integer> {
 
 		private boolean isCancelled = false;
+		private boolean isLCap = false;
+		private boolean isRCap = false;
 
 		@Override
 		protected void onProgressUpdate(Integer... progress) {
@@ -317,7 +422,12 @@ public class AuthActivity2 extends Activity {
 				mQrLineView1.setVisibility(View.GONE);
 				mCropLayout1.setVisibility(View.GONE);
 				mLfingerView.invalidate();
-
+				isLCap = true;
+				if (isLCap && isRCap)
+				{
+					isCancelled = true;
+					sendPayRequest();
+				}
 				break;
 
 			case 2:
@@ -328,6 +438,12 @@ public class AuthActivity2 extends Activity {
 				mQrLineView2.setVisibility(View.GONE);
 				mCropLayout2.setVisibility(View.GONE);
 				mRfingerView.invalidate();
+				isRCap = true;
+				if (isLCap && isRCap)
+				{
+					isCancelled = true;
+					sendPayRequest();
+				}
 				break;
 
 			case 3:

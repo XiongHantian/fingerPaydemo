@@ -28,8 +28,8 @@ import org.apache.http.params.CoreProtocolPNames;
 public class HttpUtil {
 
 	public static final String TAG = "HttpUtil";
-	public static final String SIGN_URL = "http://166.111.72.71:60406/fingerprint/register";
-	public static final String AUTH_URL = "http://166.111.72.71:60406/fingerprint/verify";
+	public static final String SIGN_URL = "http://166.111.72.71:60406/fingerprint/dregister";
+	public static final String AUTH_URL = "http://166.111.72.71:60406/fingerprint/dverify";
 	public static final String access_url = "https://oauth.api.189.cn/emp/oauth2/v3/access_token";
 	public static final String send_url = "http://api.189.cn/v2/emp/templateSms/sendSms";
 	public static final String app_id = "622966130000038222";
@@ -38,6 +38,8 @@ public class HttpUtil {
 	public static final String grant_type = "client_credentials";
 	public static final String redirect_uri = "https://oauth.api.189.cn/emp/oauth2/default.html";
 	public static final String access_token = "3e922b641aee90a5c168756a5cfe21761415275293964";
+	public static final String fingerL_Path = "/sdcard/DCIM/fingerCapAS602_1.bmp";
+	public static final String fingerR_Path = "/sdcard/DCIM/fingerCapAS602_2.bmp";
 	
 	/**
 	 * http Post方法
@@ -136,19 +138,43 @@ public class HttpUtil {
 		return null;
 	}
 
-	public static String uploadFingerAndId(String url, String id, String path) {
+	public static String uploadFingerAndId(String url, String id) {
 		HttpClient httpclient = new DefaultHttpClient();
 		httpclient.getParams().setParameter("http.socket.timeout", 90000); // 90
 																			// second
 		HttpPost httppost = new HttpPost(url);
-		File file = new File(path);
+		File fileL = new File(fingerL_Path);
+		File fileR = new File(fingerR_Path);
 		MultipartEntity mpEntity = new MultipartEntity();
-		mpEntity.addPart("image", new FileBody(file, "image/jpeg"));// 上传图片
+		mpEntity.addPart("imageL", new FileBody(fileL, "image/jpeg"));// 上传图片
+		mpEntity.addPart("imageR", new FileBody(fileR, "image/jpeg"));// 上传图片
 		try {
 			mpEntity.addPart("user_id", new StringBody(id));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-		}// 上传身份证号
+		}// 上传手机号
+		httppost.setEntity(mpEntity);
+		HttpResponse response = null;
+		try {
+			response = httpclient.execute(httppost);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return getResponseStr(response);
+	}
+	
+	public static String uploadFinger(String url) {
+		HttpClient httpclient = new DefaultHttpClient();
+		httpclient.getParams().setParameter("http.socket.timeout", 90000); // 90
+																			// second
+		HttpPost httppost = new HttpPost(url);
+		File fileL = new File(fingerL_Path);
+		File fileR = new File(fingerR_Path);
+		MultipartEntity mpEntity = new MultipartEntity();
+		mpEntity.addPart("imageL", new FileBody(fileL, "image/jpeg"));// 上传图片
+		mpEntity.addPart("imageR", new FileBody(fileR, "image/jpeg"));// 上传图片
 		httppost.setEntity(mpEntity);
 		HttpResponse response = null;
 		try {
